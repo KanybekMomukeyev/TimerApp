@@ -31,8 +31,11 @@ class _DynamicListPageState extends State<DynamicListPage> {
           return Column(children: <Widget>[
             Expanded(
               flex: 10,
-              child: ListView.builder(
+              child: ListView.separated(
                   itemCount: state.tasks.length,
+                  separatorBuilder: (context, index) {
+                    return const Divider();
+                  },
                   itemBuilder: (BuildContext context, int index) {
                     return _DynamicListItem(
                       task: state.tasks[index],
@@ -88,7 +91,6 @@ class _DynamicListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     return BlocBuilder<TimerBloc, TimerState>(
       buildWhen: (prev, state) {
         if (state is TimerInitialState) {
@@ -106,35 +108,10 @@ class _DynamicListItem extends StatelessWidget {
           BlocProvider.of<TimerBloc>(context)
               .add(TimerStarted(duration: state.duration));
         }
-        if (state is TimerRunInProgressState) {
-          final workingTasksDict = state.workingTasks;
-          if (workingTasksDict.containsKey(task.taskId)) {
-            final secondsStr = (task.durations - task.iterations)
-                .floor()
-                .toString()
-                .padLeft(2, '0');
-
-            return Material(
-              child: ListTile(
-                leading: Text(secondsStr, style: textTheme.caption),
-                title: Text("${task.durations}       ${task.taskId}"),
-                isThreeLine: true,
-                subtitle: Text("${task.taskType}"),
-                dense: true,
-                onTap: () {},
-              ),
-            );
-          }
-        }
-
         return Material(
           child: ListTile(
-            leading: Text("${task.taskType}", style: textTheme.caption),
-            title: Text("${task.durations}"),
-            isThreeLine: true,
-            subtitle: Text("${task.taskType}"),
-            dense: true,
-            onTap: () {},
+            title: Text(task.nameString()),
+            trailing: Text(task.secondString()),
           ),
         );
       },

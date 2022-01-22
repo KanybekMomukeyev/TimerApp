@@ -19,6 +19,23 @@ class TaskModel {
   TaskType taskType;
   int iterations;
 
+  String secondString() {
+    switch (taskType) {
+      case TaskType.stopped:
+        return "stopped";
+      case TaskType.active:
+        final secondsStr =
+            (durations - iterations).floor().toString().padLeft(1, '0');
+        return secondsStr + " sec";
+      case TaskType.paused:
+        return "paused";
+    }
+  }
+
+  String nameString() {
+    return "TIMER $taskId";
+  }
+
   factory TaskModel.fromRandom() {
     int min = 10;
     int max = 20;
