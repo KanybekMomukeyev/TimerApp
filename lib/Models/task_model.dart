@@ -47,4 +47,9 @@ class TaskModel {
         "task_type": taskType,
         "taskIterations": iterations,
       };
+
+  @override
+  String toString() {
+    return "task_id $taskId  task_type $taskType";
+  }
 }

@@ -5,7 +5,7 @@ import 'package:timerapp/Blocs/timer_bloc.dart';
 import 'package:timerapp/Networking/ticker.dart';
 import 'package:timerapp/UI/dynamic_list_page.dart';
 import 'package:timerapp/Blocs/add_task_bloc.dart';
-import 'package:timerapp/Networking/WorkerPool.dart';
+import 'package:timerapp/Networking/worker_pool.dart';
 
 class SimpleBlocObserver extends BlocObserver {
   @override
@@ -43,6 +43,7 @@ Future<void> main() async {
             create: (context) {
               return AddTaskBloc(
                 ticker: timerTicker,
+                workerPool: workerPool,
               );
             },
           ),

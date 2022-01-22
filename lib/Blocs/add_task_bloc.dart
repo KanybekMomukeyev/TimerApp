@@ -3,7 +3,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:timerapp/Models/task_model.dart';
-import 'package:timerapp/Networking/WorkerPool.dart';
+import 'package:timerapp/Networking/worker_pool.dart';
 import 'package:timerapp/Networking/ticker.dart';
 
 // ------------------------------------------------ EVENT ------------------------------------------------
@@ -68,11 +68,11 @@ class AddTaskInProgressState extends AddTaskState {
 
 class AddTaskSuccessState extends AddTaskState {
   final List<TaskModel> tasks;
-
-  const AddTaskSuccessState({required this.tasks});
+  final int duration;
+  const AddTaskSuccessState({required this.tasks, required this.duration});
 
   @override
-  List<Object> get props => [tasks];
+  List<Object> get props => [tasks, duration];
 
   @override
   String toString() {
@@ -89,11 +89,14 @@ class AddTaskFailureState extends AddTaskState {
 
 class AddTaskBloc extends Bloc<AddTaskEvent, AddTaskState> {
   final Ticker _ticker;
+  final WorkerPool _workerPool;
   StreamSubscription<int>? _tickerAddTaskSubscription;
 
   AddTaskBloc({
     required Ticker ticker,
+    required WorkerPool workerPool,
   })  : _ticker = ticker,
+        _workerPool = workerPool,
         super(AddTaskInitialState()) {
     on<AddTaskInitialStarted>(_onInitial);
     on<AddTaskPressed>(_onAddTask);
@@ -119,8 +122,11 @@ class AddTaskBloc extends Bloc<AddTaskEvent, AddTaskState> {
     debugPrint("_onAddTask");
     try {
       emit(AddTaskInProgressState());
-      globalTasks.add(event.taskModel);
-      return emit(AddTaskSuccessState(tasks: globalTasks));
+      _workerPool.addTaskToQueue(newTaskModel: event.taskModel);
+      return emit(AddTaskSuccessState(
+        tasks: _workerPool.fetchActiveAndPausedTasks(),
+        duration: 0,
+      ));
     } catch (error, _) {
       emit(AddTaskFailureState(message: "$error"));
     }
@@ -130,7 +136,14 @@ class AddTaskBloc extends Bloc<AddTaskEvent, AddTaskState> {
     AddTaskTimerTicked event,
     Emitter<AddTaskState> emit,
   ) async {
-    debugPrint("ADD_TASK_BLOC _onTimerTicked");
+    final activeAndPausedTasks = _workerPool.fetchActiveAndPausedTasks();
+    if (activeAndPausedTasks.isNotEmpty) {
+      debugPrint("ADD_TASK_BLOC $activeAndPausedTasks");
+      return emit(AddTaskSuccessState(
+        tasks: _workerPool.fetchActiveAndPausedTasks(),
+        duration: event.duration,
+      ));
+    }
   }
 
   @override

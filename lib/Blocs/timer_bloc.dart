@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:timerapp/Models/task_model.dart';
-import 'package:timerapp/Networking/WorkerPool.dart';
+import 'package:timerapp/Networking/worker_pool.dart';
 import 'package:timerapp/Networking/ticker.dart';
 
 // -------------------------------------- EVENT -------------------------------------- //
@@ -58,7 +57,6 @@ class TimerRunInProgressState extends TimerState {
 class TimerBloc extends Bloc<TimerEvent, TimerState> {
   final Ticker _ticker;
   final WorkerPool _workerPool;
-
   StreamSubscription<int>? _tickerTimerSubscription;
 
   TimerBloc({
@@ -87,15 +85,12 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
     _workerPool.calculateTasks();
 
     // if awailable size add task //
-    var firstPaused = globalTasks.firstWhereOrNull((task) {
-      return task.taskType == TaskType.paused;
-    });
-    if (firstPaused != null) {
-      _workerPool.addWorkerToPool(newTaskModel: firstPaused);
-    }
+    _workerPool.addNextTaskToWorkerPool();
 
-    emit(TimerRunInProgressState(event.duration,
-        workingTasks: globalWorkingTasks));
+    emit(TimerRunInProgressState(
+      event.duration,
+      workingTasks: _workerPool.currentActiveTasks(),
+    ));
   }
 
   @override

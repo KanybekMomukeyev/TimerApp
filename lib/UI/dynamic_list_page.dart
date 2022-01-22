@@ -90,17 +90,17 @@ class _DynamicListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return BlocBuilder<TimerBloc, TimerState>(
-      // buildWhen: (prev, state) {
-      //   if (state is TimerInitialState) {
-      //     return true;
-      //   }
-      //   if (state is TimerRunInProgressState) {
-      //     if (state.workingTasks.containsKey(task.taskId)) {
-      //       return true;
-      //     }
-      //   }
-      //   return false;
-      // },
+      buildWhen: (prev, state) {
+        if (state is TimerInitialState) {
+          return true;
+        }
+        if (state is TimerRunInProgressState) {
+          if (state.workingTasks.containsKey(task.taskId)) {
+            return true;
+          }
+        }
+        return false;
+      },
       builder: (context, state) {
         if (state is TimerInitialState) {
           BlocProvider.of<TimerBloc>(context)
@@ -117,17 +117,6 @@ class _DynamicListItem extends StatelessWidget {
             return Material(
               child: ListTile(
                 leading: Text(secondsStr, style: textTheme.caption),
-                title: Text("${task.durations}       ${task.taskId}"),
-                isThreeLine: true,
-                subtitle: Text("${task.taskType}"),
-                dense: true,
-                onTap: () {},
-              ),
-            );
-          } else {
-            return Material(
-              child: ListTile(
-                leading: Text("${task.taskType}", style: textTheme.caption),
                 title: Text("${task.durations}       ${task.taskId}"),
                 isThreeLine: true,
                 subtitle: Text("${task.taskType}"),
