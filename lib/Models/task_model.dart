@@ -22,7 +22,7 @@ class TaskModel {
   String secondString() {
     switch (taskType) {
       case TaskType.stopped:
-        return "stopped";
+        return "0 sec"; // stopped for 0 sec
       case TaskType.active:
         final secondsStr =
             (durations - iterations).floor().toString().padLeft(1, '0');
