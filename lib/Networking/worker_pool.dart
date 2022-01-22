@@ -1,13 +1,13 @@
 import 'package:timerapp/Models/task_model.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 
 class WorkerPool {
   final List<TaskModel> _globalTasksQueue = <TaskModel>[];
   final _globalWorkingTasks = <int, TaskModel>{};
-
   bool _shouldUpdateList = false;
-
   final String initialParam;
+
   WorkerPool({
     required this.initialParam,
   });
@@ -21,6 +21,29 @@ class WorkerPool {
 
   Map<int, TaskModel> currentActiveTasks() {
     return _globalWorkingTasks;
+  }
+
+  void calculateTasksInWorkerPool() {
+    final List<TaskModel> toRemoveTasks = [];
+    _shouldUpdateList = false;
+    if (_globalWorkingTasks.keys.isNotEmpty) {
+      final allCurrentKeys = _globalWorkingTasks.keys;
+      for (var currentKey in allCurrentKeys) {
+        final currentWorkingTask = _globalWorkingTasks[currentKey]!;
+        currentWorkingTask.iterations = currentWorkingTask.iterations + 1;
+        if ((currentWorkingTask.durations - currentWorkingTask.iterations) ==
+            0) {
+          debugPrint("_shouldUpdateList TRUE");
+          _shouldUpdateList = true;
+          currentWorkingTask.taskType = TaskType.stopped;
+          toRemoveTasks.add(currentWorkingTask);
+        }
+      }
+    }
+
+    for (var toRemoveTask in toRemoveTasks) {
+      _globalWorkingTasks.remove(toRemoveTask.taskId);
+    }
   }
 
   void addNextTaskToWorkerPool() {
@@ -38,28 +61,6 @@ class WorkerPool {
     }
   }
 
-  void calculateTasks() {
-    final List<TaskModel> toRemoveTasks = [];
-    _shouldUpdateList = false;
-    if (_globalWorkingTasks.keys.isNotEmpty) {
-      final allCurrentKeys = _globalWorkingTasks.keys;
-      for (var currentKey in allCurrentKeys) {
-        final currentWorkingTask = _globalWorkingTasks[currentKey]!;
-        currentWorkingTask.iterations = currentWorkingTask.iterations + 1;
-        if ((currentWorkingTask.durations - currentWorkingTask.iterations) ==
-            0) {
-          _shouldUpdateList = true;
-          currentWorkingTask.taskType = TaskType.stopped;
-          toRemoveTasks.add(currentWorkingTask);
-        }
-      }
-    }
-
-    for (var toRemoveTask in toRemoveTasks) {
-      _globalWorkingTasks.remove(toRemoveTask.taskId);
-    }
-  }
-
   List<TaskModel> fetchActiveAndPausedTasks() {
     if (_shouldUpdateList) {
       return _globalTasksQueue.where((element) {
@@ -74,5 +75,9 @@ class WorkerPool {
     } else {
       return [];
     }
+  }
+
+  bool shouldUpdate() {
+    return _shouldUpdateList;
   }
 }

@@ -136,11 +136,11 @@ class AddTaskBloc extends Bloc<AddTaskEvent, AddTaskState> {
     AddTaskTimerTicked event,
     Emitter<AddTaskState> emit,
   ) async {
-    final activeAndPausedTasks = _workerPool.fetchActiveAndPausedTasks();
-    if (activeAndPausedTasks.isNotEmpty) {
-      debugPrint("ADD_TASK_BLOC $activeAndPausedTasks");
+    debugPrint("ADD_TASK_BLOC");
+    if (_workerPool.shouldUpdate()) {
+      final activeAndPausedTasks = _workerPool.fetchActiveAndPausedTasks();
       return emit(AddTaskSuccessState(
-        tasks: _workerPool.fetchActiveAndPausedTasks(),
+        tasks: activeAndPausedTasks,
         duration: event.duration,
       ));
     }
