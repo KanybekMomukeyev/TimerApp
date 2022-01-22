@@ -33,7 +33,9 @@ class TaskModel {
   }
 
   String nameString() {
-    return "TIMER $taskId";
+    final taskIdString = "$taskId";
+    var shortTaskIdString = taskIdString.substring(taskIdString.length - 4);
+    return "TIMER $shortTaskIdString";
   }
 
   factory TaskModel.fromRandom() {
