@@ -80,13 +80,6 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
 
   void _onTicked(TimerTicked event, Emitter<TimerState> emit) {
     debugPrint("TIMER_BLOC _onTicked");
-
-    // calculate task iterations //
-    _workerPool.calculateTasksInWorkerPool();
-
-    // if awailable size add task //
-    _workerPool.addNextTaskToWorkerPool();
-
     emit(TimerRunInProgressState(
       event.duration,
       workingTasks: _workerPool.currentActiveTasks(),

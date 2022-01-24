@@ -137,6 +137,13 @@ class AddTaskBloc extends Bloc<AddTaskEvent, AddTaskState> {
     Emitter<AddTaskState> emit,
   ) async {
     debugPrint("ADD_TASK_BLOC");
+
+    // calculate task iterations //
+    _workerPool.calculateTasksInWorkerPool();
+
+    // if awailable size add task //
+    _workerPool.addNextTaskToWorkerPool();
+
     if (_workerPool.shouldUpdate()) {
       final activeAndPausedTasks = _workerPool.fetchActiveAndPausedTasks();
       return emit(AddTaskSuccessState(
